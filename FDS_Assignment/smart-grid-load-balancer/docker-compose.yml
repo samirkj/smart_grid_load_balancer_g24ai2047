@@ -1,0 +1,72 @@
+services:
+
+  charge_request:
+    container_name: charge_request
+    build: ./charge_request_service
+    ports:
+      - "7000:7000"
+    networks:
+      - substations
+    depends_on:
+      - load_balancer
+
+  load_balancer:
+    container_name: load_balancer
+    build: ./load_balancer
+    ports:
+      - "6000:6000"
+    networks:
+      - substations
+    depends_on:
+      - substation1
+      - substation2
+      - substation3
+
+  substation1:
+    container_name: substation1
+    build: ./substation_service
+    ports:
+      - "9101:9100"  # Host:Container (Prometheus metrics)
+    networks:
+      - substations
+
+  substation2:
+    container_name: substation2
+    build: ./substation_service
+    ports:
+      - "9102:9100"
+    networks:
+      - substations
+
+  substation3:
+    container_name: substation3
+    build: ./substation_service
+    ports:
+      - "9103:9100"
+    networks:
+      - substations
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - substations
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - substations
+
+networks:
+  substations:
