@@ -1,0 +1,16 @@
+# Use official Python base image
+FROM python:3.10-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY src/ ./src/
+COPY requirements.txt ./
+
+# Install dependencies and debug tools
+RUN apt-get update && apt-get install -y curl iputils-ping && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Run the node
+CMD ["python", "src/node.py"]
